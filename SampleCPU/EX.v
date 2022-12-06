@@ -8,7 +8,7 @@ module EX(
     input wire [`ID_TO_EX_WD-1:0] id_to_ex_bus,
 
     output wire [`EX_TO_MEM_WD-1:0] ex_to_mem_bus,
-    output wire [37:0] ex_to_rf_bus,
+    output wire [38:0] ex_to_rf_bus,
 
     output wire data_sram_en,
     output wire [3:0] data_sram_wen,
@@ -38,7 +38,6 @@ module EX(
     wire [11:0] alu_op;
     wire [2:0] sel_alu_src1;
     wire [3:0] sel_alu_src2;
-    wire data_ram_en;
     wire [3:0] data_ram_wen;
     wire rf_we;
     wire [4:0] rf_waddr;
@@ -53,7 +52,7 @@ module EX(
         alu_op,         // 94:83
         sel_alu_src1,   // 82:80
         sel_alu_src2,   // 79:76
-        data_ram_en,    // 75
+        data_sram_en,    // 75
         data_ram_wen,   // 74:71
         rf_we,          // 70
         rf_waddr,       // 69:65
@@ -85,10 +84,8 @@ module EX(
         .alu_result  (alu_result  )
     );
 
-    // memory data
+    // store data
     wire inst_sb, inst_sh, inst_sw;
-    reg [3:0] data_sram_wen_r;
-    reg [31:0] data_sram_wdata_r;
 
     assign {
         inst_sb, 
@@ -96,75 +93,18 @@ module EX(
         inst_sw
     } = data_ram_wen[2:0];
 
-    always @ (*) begin
-        case(1'b1)
-            inst_sb:
-            begin
-                data_sram_wdata_r <= {4{rf_rdata2[7:0]}};
-                case(alu_result[1:0])
-                    2'b00:
-                    begin
-                        data_sram_wen_r <= 4'b0001;
-                    end
-                    2'b01:
-                    begin
-                        data_sram_wen_r <= 4'b0010;
-                    end
-                    2'b10:
-                    begin
-                        data_sram_wen_r <= 4'b0100;
-                    end
-                    2'b11:
-                    begin
-                        data_sram_wen_r <= 4'b1000;
-                    end
-                    default:
-                    begin
-                        data_sram_wen_r <= 4'b0;
-                    end
-                endcase
-            end
-            inst_sh:
-            begin
-                data_sram_wdata_r <= {2{rf_rdata2[15:0]}};
-                case(alu_result[1:0])
-                    2'b00:
-                    begin
-                        data_sram_wen_r <= 4'b0011;
-                    end
-                    2'b10:
-                    begin
-                        data_sram_wen_r <= 4'b1100;
-                    end
-                    default:
-                    begin
-                        data_sram_wen_r <= 4'b0000;
-                    end
-                endcase
-            end
-            inst_sw:begin
-                data_sram_wdata_r <= rf_rdata2;
-                data_sram_wen_r <= 4'b1111;
-            end
-            default:
-            begin
-                data_sram_wdata_r <= 32'b0;
-                data_sram_wen_r <= 4'b0000;
-            end
-        endcase
-    end
+    assign data_sram_wen   = inst_sw ? 4'b1111 : 4'b0;
 
-    assign data_sram_en = data_ram_en;
-    assign data_sram_wen = data_sram_wen_r;
-    assign data_sram_addr = alu_result; 
-    assign data_sram_wdata = data_sram_wdata_r;
+    assign data_sram_addr  = data_sram_en ? rf_rdata1 + {{16{inst[15]}}, inst[15:0]} : 32'b0; 
+
+    assign data_sram_wdata = (data_sram_wen == 4'b1111) ? rf_rdata2 : 32'b0;
 
     assign ex_result = alu_result;
 
     assign ex_to_mem_bus = {
         mem_op,         // 80:76
         ex_pc,          // 75:44
-        data_ram_en,    // 43
+        data_sram_en,    // 43
         data_ram_wen,   // 42:39
         sel_rf_res,     // 38
         rf_we,          // 37
@@ -172,6 +112,7 @@ module EX(
         ex_result       // 31:0
     };
     assign ex_to_rf_bus = {
+        sel_rf_res,
         rf_we,
         rf_waddr,
         ex_result

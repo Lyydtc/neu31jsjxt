@@ -28,7 +28,7 @@ module mycpu_core(
     wire [`BR_WD-1:0] br_bus; 
     wire [`DATA_SRAM_WD-1:0] ex_dt_sram_bus;
     wire [`WB_TO_RF_WD-1:0] wb_to_rf_bus;
-    wire [37:0] ex_to_rf_bus;
+    wire [38:0] ex_to_rf_bus;
     wire [37:0] mem_to_rf_bus;
     wire [`StallBus-1:0] stall;
 
@@ -50,6 +50,7 @@ module mycpu_core(
         .rst             (rst             ),
         .stall           (stall           ),
         .stallreq        (stallreq        ),
+        .stallreq_for_load(stallreq_for_load),
         .if_to_id_bus    (if_to_id_bus    ),
         .inst_sram_rdata (inst_sram_rdata ),
         .wb_to_rf_bus    (wb_to_rf_bus    ),
@@ -96,6 +97,7 @@ module mycpu_core(
 
     CTRL u_CTRL(
     	.rst   (rst   ),
+        .stallreq_for_load(stallreq_for_load),
         .stall (stall )
     );
     

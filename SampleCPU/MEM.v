@@ -61,17 +61,8 @@ module MEM(
     } = mem_op;
 
     //load data from memory
-    reg [31:0] mem_result_r;
-    always @(*) begin
-        case(1'b1)
-            inst_lw:
-            begin 
-                mem_result_r <= data_sram_rdata;
-            end
-        endcase
-    end
+    assign mem_result = inst_lw ? data_sram_rdata : 32'b0;
 
-    assign mem_result = mem_result_r;
     assign rf_wdata = sel_rf_res ? mem_result : ex_result;
 
     assign mem_to_wb_bus = {
