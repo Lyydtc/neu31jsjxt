@@ -4,5 +4,8 @@
 
 ## 12.5
 
-添加了addu、subu、or、xor、bne、jr、jal、sll、sw、lw十条命令，下一步是解决lw之后的数据相关问题，可能需要插入stall
-PC 定位至 0x9bf00d5c
+增加了十条指令，需要添加stall，且sw可能有误
+
+## 12.6
+
+添加了？？条指令，完成stall_for_load，修正了sw的问题，到达测试点25/26
