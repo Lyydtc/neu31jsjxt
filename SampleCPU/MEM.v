@@ -61,7 +61,20 @@ module MEM(
     } = mem_op;
 
     //load data from memory
-    assign mem_result = inst_lw ? data_sram_rdata : 32'b0;
+    assign mem_result = inst_lw  ? data_sram_rdata : 
+                        inst_lb  & ex_result[1:0]==2'b00 ? {{24{data_sram_rdata[ 7]}}, data_sram_rdata[ 7: 0]} :
+                        inst_lb  & ex_result[1:0]==2'b01 ? {{24{data_sram_rdata[15]}}, data_sram_rdata[15: 8]} :
+                        inst_lb  & ex_result[1:0]==2'b10 ? {{24{data_sram_rdata[23]}}, data_sram_rdata[23:16]} :
+                        inst_lb  & ex_result[1:0]==2'b11 ? {{24{data_sram_rdata[31]}}, data_sram_rdata[31:24]} :
+                        inst_lbu & ex_result[1:0]==2'b00 ? {{24{1'b0}}, data_sram_rdata[ 7: 0]} :
+                        inst_lbu & ex_result[1:0]==2'b01 ? {{24{1'b0}}, data_sram_rdata[15: 8]} :
+                        inst_lbu & ex_result[1:0]==2'b10 ? {{24{1'b0}}, data_sram_rdata[23:16]} :
+                        inst_lbu & ex_result[1:0]==2'b11 ? {{24{1'b0}}, data_sram_rdata[31:24]} :
+                        inst_lh  & ex_result[1:0]==2'b00 ? {{16{data_sram_rdata[15]}}, data_sram_rdata[15: 0]} :
+                        inst_lh  & ex_result[1:0]==2'b10 ? {{16{data_sram_rdata[31]}}, data_sram_rdata[31:16]} :
+                        inst_lhu & ex_result[1:0]==2'b00 ? {{16{1'b0}}, data_sram_rdata[15: 0]} :
+                        inst_lhu & ex_result[1:0]==2'b10 ? {{16{1'b0}}, data_sram_rdata[31:16]} :
+                        32'b0;
 
     assign rf_wdata = sel_rf_res ? mem_result : ex_result;
 
