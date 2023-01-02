@@ -67,6 +67,7 @@ module mycpu_core(
         .id_to_ex_bus    (id_to_ex_bus    ),
         .ex_to_mem_bus   (ex_to_mem_bus   ),
         .ex_to_rf_bus    (ex_to_rf_bus    ),
+        .stallreq_for_ex (stallreq_for_ex ),
         .data_sram_en    (data_sram_en    ),
         .data_sram_wen   (data_sram_wen   ),
         .data_sram_addr  (data_sram_addr  ),
@@ -96,9 +97,10 @@ module mycpu_core(
     );
 
     CTRL u_CTRL(
-    	.rst   (rst   ),
-        .stallreq_for_load(stallreq_for_load),
-        .stall (stall )
+    	.rst                (rst   ),
+        .stallreq_for_load  (stallreq_for_load),
+        .stallreq_for_ex    (stallreq_for_ex),
+        .stall              (stall )
     );
     
 endmodule
